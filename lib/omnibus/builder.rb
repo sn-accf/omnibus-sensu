@@ -497,7 +497,7 @@ module Omnibus
     def mkdir(directory, options = {})
       build_commands << BuildCommand.new("mkdir `#{directory}'") do
         Dir.chdir(software.project_dir) do
-          FileUtils.mkdir_p(directory, options)
+          FileUtils.mkdir_p(directory)
         end
       end
     end
@@ -519,7 +519,7 @@ module Omnibus
           parent = File.dirname(file)
           FileUtils.mkdir_p(parent) unless File.directory?(parent)
 
-          FileUtils.touch(file, options)
+          FileUtils.touch(file)
         end
       end
     end
@@ -568,7 +568,7 @@ module Omnibus
             log.warn(log_key) { "no matched files for glob #{command}" }
           else
             files.each do |file|
-              FileUtils.cp_r(file, destination, options)
+              FileUtils.cp_r(file, destination)
             end
           end
         end
@@ -663,7 +663,7 @@ module Omnibus
     #       config.guess.to. Default: "."
     #     install [Array<Symbol>] parts of config.guess to copy.
     #       Default: [:config_guess, :config_sub]
-    def update_config_guess(target: ".", install: [:config_guess, :config_sub])
+    def update_config_guess(*args, target: ".", install: [:config_guess, :config_sub])
       build_commands << BuildCommand.new("update_config_guess `target: #{target} install: #{install.inspect}'") do
         config_guess_dir = "#{install_dir}/embedded/lib/config_guess"
         %w{config.guess config.sub}.each do |c|
