@@ -240,7 +240,7 @@ module Omnibus
           returns = [0]
           returns << 1 if source[:extract] == :lax_tar
 
-          shellout!("tar #{compression_switch}xf #{safe_downloaded_file} -C \"#{safe_project_dir}\"", returns: returns)
+          shellout!("tar #{compression_switch}xf #{safe_downloaded_file.tr('\\', '/').sub(/^([A-Z]):/, '/\1').downcase} -C #{safe_project_dir.tr('\\', '/').sub(/^([A-Z]):/, '/\1').downcase}", returns: returns)
         elsif downloaded_file.end_with?(*COMPRESSED_TAR_EXTENSIONS)
           Dir.mktmpdir do |temp_dir|
             log.debug(log_key) { "Temporarily extracting `#{safe_downloaded_file}' to `#{temp_dir}'" }
@@ -262,7 +262,7 @@ module Omnibus
       elsif downloaded_file.end_with?(".zip")
         shellout!("unzip #{safe_downloaded_file} -d #{safe_project_dir}")
       else
-        shellout!("#{tar} #{compression_switch}xf #{safe_downloaded_file} -C \"#{safe_project_dir}\"")
+        shellout!("#{tar} #{compression_switch}xf #{safe_downloaded_file.tr('\\', '/').sub(/^([A-Z]):/, '/\1').downcase} -C #{safe_project_dir.tr('\\', '/').sub(/^([A-Z]):/, '/\1').downcase}")
       end
     end
 
