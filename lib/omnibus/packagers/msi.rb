@@ -194,6 +194,35 @@ module Omnibus
     expose :wix_candle_extension
 
     #
+    # Set a wix heat XSLT transform to apply to the harvested fragment.
+    #
+    # heat.exe emits one Component per harvested file. A transform lets a project
+    # drop specific files/components from the auto-generated fragment so they can
+    # instead be hand-authored (e.g. a service .exe that must live in a component
+    # carrying a ServiceInstall). The value is passed to heat via `-t`; because heat
+    # runs with its CWD set to the staging dir, pass a staging-relative path such as
+    # "Resources/assets/exclude-acc-exe.xslt" (the asset is copied into place before
+    # heat runs).
+    #
+    # @example
+    #   wix_heat_transform 'Resources/assets/exclude-acc-exe.xslt'
+    #
+    # @param [String] transform
+    #   A staging-relative path to an XSLT transform
+    #
+    # @return [Array]
+    #   The list of transforms that will be applied
+    #
+    def wix_heat_transform(transform)
+      unless transform.is_a?(String)
+        raise InvalidValue.new(:wix_heat_transform, "be a String")
+      end
+
+      wix_heat_transforms << transform
+    end
+    expose :wix_heat_transform
+
+    #
     # Signal that we're building a bundle rather than a single package
     #
     # @example
@@ -486,6 +515,7 @@ module Omnibus
             -nologo -srd -sreg -gg -cg ProjectDir
             -dr PROJECTLOCATION
             -var "var.ProjectSourceDir"
+            #{wix_heat_transform_switches(wix_heat_transforms)}
             -out "project-files.wxs"
         EOH
       end
@@ -588,6 +618,27 @@ module Omnibus
     #
     def wix_candle_extensions
       @wix_candle_extensions ||= []
+    end
+
+    #
+    # Returns the heat XSLT transforms to apply during harvest
+    #
+    # @return [Array]
+    #   the transforms that will be passed to heat via -t
+    #
+    def wix_heat_transforms
+      @wix_heat_transforms ||= []
+    end
+
+    #
+    # Takes an array of heat transform paths and creates the -t switches.
+    #
+    # for example, ['a.xslt', 'b.xslt'] => '-t "a.xslt" -t "b.xslt"'
+    #
+    # @return [String]
+    #
+    def wix_heat_transform_switches(arr)
+      "#{arr.map { |t| %Q{-t "#{t}"} }.join(' ')}"
     end
 
     #
